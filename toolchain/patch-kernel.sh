@@ -5,10 +5,6 @@
 # in an upper layer
 function apply_patch {
 apply="patch -p1 -E -d"
-#if [ ! -e "${1}" ] ; then
-#	echo "${1} is not a file"
-#	exit 1
-#fi
 
 case "${1}" in
 *\.tar\.gz$|*\.tgz$|*\.tar\.bz$|*\.tar\.bz2$|*\.tbz$|*\.tbz2$)
@@ -46,7 +42,6 @@ if [ $? != 0 ] ; then
 fi
 }
 
-
 # entry point
 builddir=${1}
 patchdir=${2}
@@ -64,15 +59,20 @@ if [ ! -d "${builddir}" ] ; then
 	exit 1
 fi
 
-# parse patch list, extract archives, apply patches
+# go to the patch directory because $patchlist is interpreted when doing
+# for i in $patchlist
+pushd ${patchdir}
+index=0
 for i in $patchlist ; do
-	# for remote files, directory is buildroot dl dir
-	#if echo $i | grep -q -E "^http://|^ftp://" ; then
-	#	patchdir=$patchdir
-	#else
-	#	patchdir=$(dirname $i)
-	#fi
-	patch_path="${patchdir}/${i}"
+	patchlist_interpreted[${index}]="$i"
+	index=`expr ${index} + 1`
+	echo patchlist_interpreted[${index}]=$i
+done
+popd
+
+for index in "${!patchlist_interpreted[@]}" ; do
+	file="${patchlist_interpreted[${index}]}"
+	patch_path="${patchdir}/${file}"
 	# three cases: directory, archive, file patch (compressed or not)
 	# directory
 	if [ -d "${patch_path}" ] ; then
@@ -80,29 +80,23 @@ for i in $patchlist ; do
 			apply_patch "${patch_path}/${p}" || exit 1
 		done
 	# archive
-	elif echo $i | grep -q -E "tar\.bz$|tar\.bz2$|tbz$|tbz2$|tar\.gz$|tgz$" ; then
+	elif echo $file | grep -q -E "tar\.bz$|tar\.bz2$|tbz$|tbz2$|tar\.gz$|tgz$" ; then
 		mkdir "${patchesdir}"
 		# extract archive
-		if echo $i | grep -q -E "tar\.bz$|tar\.bz2$|tbz$|tbz2$" ; then
+		if echo $file | grep -q -E "tar\.bz$|tar\.bz2$|tbz$|tbz2$" ; then
 			tar_options="-xjf"
 		else
 			tar_options="-xzf"
 		fi
 		tar -C ${patchesdir} --strip-components=1 ${tar_options} ${patch_path}
 		# apply patches from the archive
-		#echo ${patchesdir}
-		#find ${patchesdir} | sort
 		for p in $(find ${patchesdir} | sort) ; do
 			apply_patch "${p}" || { rm -rf "${patchesdir}" ; exit 1; }
 		done
 		rm -rf "${patchesdir}"
 	# file which is not an archive
 	else
-		# we can have regex into patch name as package*.patch.arm that's
-		# why using ls
-		for p in $(ls -d ${patch_path} 2> /dev/null) ; do
-			apply_patch "${p}" || exit 1
-		done
+		apply_patch "${patch_path}" || exit 1
 	fi
 done
 
