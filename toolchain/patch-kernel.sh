@@ -7,23 +7,24 @@ function apply_patch {
 apply="patch -p1 -E -d"
 
 case "${1}" in
-*\.tar\.gz$|*\.tgz$|*\.tar\.bz$|*\.tar\.bz2$|*\.tbz$|*\.tbz2$)
+*\.tar\.gz|*\.tgz|*\.tar\.bz|*\.tar\.bz2|*\.tbz|*\.tbz2)
 	echo "Error with ${1}";
 	echo "Archives into a directory or another archive is not supported";
 	return 1;
 	;;
-*\.gz$)
+*\.gz)
 	type="gzip"; uncomp="gunzip -dc"; ;;
-*\.bz$)
+*\.bz)
 	type="bzip"; uncomp="bunzip -dc"; ;;
-*\.bz2$)
+*\.bz2)
 	type="bzip2"; uncomp="bunzip2 -dc"; ;;
-*\.zip$)
+*\.zip)
 	type="zip"; uncomp="unzip -d"; ;;
-*\.Z$)
+*\.Z)
 	type="compress"; uncomp="uncompress -c"; ;;
 *\.diff*)
 	type="diff"; uncomp="cat"; ;;
+# '*' at the end is needed for patch.arm for example
 *\.patch*)
 	type="patch"; uncomp="cat"; ;;
 *)
