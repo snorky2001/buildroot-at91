@@ -12,3 +12,6 @@ echo "done" >> ${1}/root/go.sh
 chmod +x ${1}/root/go.sh
 
 cp board/atmel/sama5d3ek_demo/MPEG2_480_272.avi ${1}/root/MPEG2_480_272.avi
+
+# alsa stuff
+board/atmel/sama5d3ek_demo/alsa/post-build_alsa.sh $1 board/atmel/sama5d3ek_demo
