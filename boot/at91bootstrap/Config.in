@@ -2,49 +2,70 @@ config BR2_TARGET_AT91BOOTSTRAP
 	depends on BR2_arm926t
 	bool "AT91 Bootstrap"
 	help
-	  AT91Bootstrap is a first level bootloader for the Atmel AT91
-	  devices. It integrates algorithms for:
+	  AT91Bootstrap is the Second level bootloader for the Atmel AT91SoC
+	  It integrates algorithms for:
 	  - Device initialization such as clock configuration, PIO settings...
 	  - Peripheral drivers such as PIO, PMC or SDRAMC...
-	  - Physical media algorithm such as DataFlash, NandFlash, NOR Flash...
-
-if	BR2_TARGET_AT91BOOTSTRAP
-
-config BR2_TARGET_AT91BOOTSTRAP_CUSTOM_PATCH_DIR
-	string "custom patch dir"
-	help
-	  If your board requires custom patches, add the path to the
-	  directory containing the patches here. The patches must be
-	  named at91bootstrap-<version>-<something>.patch.
-
-	  Most users may leave this empty
-
-config BR2_TARGET_AT91BOOTSTRAP_BOARD
-	string "Bootstrap board"
-	default ""
-	help
-	  This is used to do a make <board>_config
+	  - Physical media algorithm such as DataFlash, NANDFlash, SD Card...
 
 choice
-	prompt "Boot Memory"
-	default BR2_TARGET_AT91BOOTSTRAP_DATAFLASH
-	help
-	  Select Chip for which AT91 bootstrap should be built
+	prompt "Select File Name Configure Mode"
+	depends on BR2_TARGET_AT91BOOTSTRAP
+	default BR2_AT91BOOTSTRAP_CONFIG_FILENAME
 
-config BR2_TARGET_AT91BOOTSTRAP_DATAFLASH
-	bool "Data Flash"
+config BR2_AT91BOOTSTRAP_CONFIG_FILENAME
+	bool "Configure Config File Name"
 
-config BR2_TARGET_AT91BOOTSTRAP_NANDFLASH
-	bool "NAND Flash"
+config BR2_AT91BOOTSTRAP_INPUT_FILENAME
+	bool "Input Config File Name"
 
 endchoice
 
-config BR2_TARGET_AT91BOOTSTRAP_MEMORY
-	string
-	default	"dataflash"	if	BR2_TARGET_AT91BOOTSTRAP_DATAFLASH
-	default	"nandflash"	if	BR2_TARGET_AT91BOOTSTRAP_NANDFLASH
+menu "Configure Config File Name"
+	depends on BR2_AT91BOOTSTRAP_CONFIG_FILENAME
 
-endif
+config BR2_AT91BOOTSTRAP_BOARD_NAME
+	string "Board Name to configure"
+	default "at91sam9g20ek"
+	help
+	  Input the board name to configure.
 
+choice
+	prompt "Select Booting Physical Media"
+	default BS2_AT91BOOTSTRAP_NANDFlash
 
+config BR2_AT91BOOTSTRAP_NANDFLASH
+	bool "NandFLash"
 
+config BR2_AT91BOOTSTRAP_DATAFLASH
+	bool "DataFlash"
+
+config BR2_AT91BOOTSTRAP_SDCARD
+	bool "SD Card"
+
+endchoice
+
+choice
+	prompt "Select Booting Image"
+	default BR2_AT91BOOTSTRAP_UBOOT
+
+config BR2_AT91BOOTSTRAP_UBOOT
+	bool "u-boot"
+
+config BR2_AT91BOOTSTRAP_LINUX
+	bool "linux"
+
+config BR2_AT91BOOTSTRAP_LINUX_DT
+	bool "linux + dt"
+
+endchoice
+endmenu
+
+config BR2_AT91BOOTSTRAP_INPUT_CONFIG_FILENAME
+	string "Input Config File Name"
+	default "at91sam9g20eknf_uboot_defconfig"
+	depends on BR2_AT91BOOTSTRAP_INPUT_FILENAME
+	help
+	  Input at91bootstrap default config file name.
+	  The default configuration file is located at
+	  board/<ek board name>/ in at91bootstrap tree.
