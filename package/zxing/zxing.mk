@@ -11,7 +11,7 @@ ZXING_LICENSE_FILES = COPYING
 ZXING_INSTALL_STAGING = YES
 
 ifneq ($(BR2_ENABLE_LOCALE),y)
-ZXING_DEPENDENCIES += libiconv
+ZXING_DEPENDENCIES += libiconv imagemagick
 endif
 
 define ZXING_EXTRACT_CMDS
@@ -32,9 +32,11 @@ endef
 
 define ZXING_INSTALL_TARGET_CMDS
 	$(MAKE) -C $(@D)/cpp/core/src DESTDIR=$(TARGET_DIR) install
+	install -D $(@D)/cpp/core/src/zxing_barcode $(TARGET_DIR)/usr/bin/zxing_barcode
 endef
 
 define ZXING_UNINSTALL_TARGET_CMDS
+	rm -f $(TARGET_DIR)/usr/bin/zxing_barcode
 	$(MAKE) -C $(@D)/cpp/core/src DESTDIR=$(TARGET_DIR) uninstall
 endef
 

@@ -1,21 +1,36 @@
-[PATCH] add Makefile
+[PATCH] add Makefile for zxing barcode reader example
 
 The scons based build system doesn't handle cross compilation, special
 compiler flags or (un)installation, so add a simple makefile instead
 which does.
 
 Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+[josh.wu@atmel.com: also compile the zxing barcode example]
+Signed-off-by: Josh Wu<josh.wu@atmel.com>
 ---
- cpp/core/src/Makefile |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ cpp/core/src/Makefile |   27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
 Index: zxing-2.0/cpp/core/src/Makefile
 ===================================================================
 --- /dev/null
 +++ zxing-2.0/cpp/core/src/Makefile
-@@ -0,0 +1,14 @@
+@@ -0,0 +1,26 @@
 +override CXXFLAGS += -I.
++override CXXFLAGS += -I$(DESTDIR)/usr/include/ImageMagick/
++override LDFLAGS += -L.
 +SRCS := $(shell find -name '*.cpp')
++
++OUT = zxing_barcode
++SOURCES = ../../magick/src/MagickBitmapSource.cpp ../../magick/src/main.cpp
++OBJECTS = ${SOURCES:.cpp=.o}
++LIBS = -lMagick++ -lMagickWand -lMagickCore -lzxing -liconv
++
++all: $(OUT)
++	@echo Build DONE.
++
++$(OUT): $(OBJECTS) libzxing.a
++	$(CC) $(LDFLAGS) -o $(OUT) $(OBJECTS) $(LIBS)
 +
 +libzxing.a: $(SRCS:.cpp=.o)
 +	$(AR) $(ARFLAGS) $@ $^
